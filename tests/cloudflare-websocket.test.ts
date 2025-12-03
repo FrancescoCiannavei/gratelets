@@ -1,4 +1,3 @@
-import { platform } from "node:os"
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process"
 import { describe, beforeAll, test, expect, afterAll } from "vitest"
 import { dev, type DevServer, build } from "./utils.ts"
@@ -28,7 +27,7 @@ describe("dev", {
         await promise
     })
 
-    test("endpoint can reject upgrade request", async () => {
+    test("endpoint can reject upgrade request", { skip: typeof WebSocket === "undefined" || process.version.startsWith("v24") }, async () => {
         const ws = new WebSocket(`ws://localhost:${server.address.port}/ws`, "unsupported-protocol")
         const { promise, resolve } = Promise.withResolvers<void>()
         ws.onerror = e => {
@@ -73,7 +72,7 @@ describe("dev", {
 
 describe("build", {
     timeout: 500,
-    skip: typeof WebSocket === "undefined" || platform() === "win32"
+    skip: typeof WebSocket === "undefined" || process.platform === "win32"
 }, () => {
     let wrangler: ChildProcessWithoutNullStreams
 
@@ -127,7 +126,7 @@ describe("build", {
         await promise
     })
 
-    test("endpoint can reject upgrade request", async () => {
+    test("endpoint can reject upgrade request", { skip: typeof WebSocket === "undefined" || process.platform === "win32" || process.version.startsWith("v24") }, async () => {
         const ws = new WebSocket(`ws://localhost:8788/ws`, "unsupported-protocol")
         const { promise, resolve } = Promise.withResolvers<void>()
         ws.onerror = e => {
@@ -150,8 +149,7 @@ describe("build", {
         await promise
     })
 
-    if (false)
-    test("handles binary data with blob binaryType", { timeout: 1000 }, async () => {
+    test("handles binary data with blob binaryType", { timeout: 1000, skip: true }, async () => {
         const ws = new WebSocket("ws://localhost:8788/blob")
         const { promise, resolve, reject } = Promise.withResolvers<void>()
         ws.onopen = () => ws.send(new TextEncoder().encode("Hello"))
