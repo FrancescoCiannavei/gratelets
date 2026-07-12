@@ -88,7 +88,7 @@ describe("dev", () => {
     test("Page A includes styles and scripts from component A", async () => {
         A = await server.fetch("/A")
         expect(A).to.include("Contents of A")
-        expect(A).to.include("background-color:paleturquoise")
+        expect(A).to.match(/background-color:\s*(paleturquoise|#afeeee)/)
         const [ src ] = devScriptRegex.exec(A)!
         const js = await server.fetch(src)
         expect(js).to.include("script of A")
@@ -97,15 +97,15 @@ describe("dev", () => {
     test("Page B includes styles and scripts from component B", async () => {
         B = await server.fetch("/B")
         expect(B).to.include("Contents of B")
-        expect(B).to.include("background-color:cornsilk")
+        expect(B).to.match(/background-color:\s*(cornsilk|#fff8dc)/)
         const [ src ] = devScriptRegex.exec(B)!
         const js = await server.fetch(src)
         expect(js).to.include("script of B")
     })
     
     test("Assets don't leak into unrelated pages", async () => {
-        expect(A).to.not.include("background-color:cornsilk")
-        expect(B).to.not.include("background-color:paleturquoise")
+        expect(A).to.not.match(/background-color:\s*(cornsilk|#fff8dc)/)
+        expect(B).to.not.match(/background-color:\s*(paleturquoise|#afeeee)/)
         const matches = devScriptRegex.exec(A)
         expect(matches).to.have.lengthOf(1)
         const [ scriptA ] = matches!
@@ -120,7 +120,7 @@ describe("dev", () => {
     test("Components in a subfolder can be dynamically imported", async () => {
         const C = await server.fetch("/C")
         expect(C).to.include("Contents of C")
-        expect(C).to.include("background-color:burlywood")
+        expect(C).to.match(/background-color:\s*(burlywood|#deb887)/)
         const [ src ] = devScriptRegex.exec(C)!
         const js = await server.fetch(src)
         expect(js).to.include("script of C")
@@ -140,7 +140,7 @@ describe("dev", () => {
         const components = [...multipleInstances.matchAll(/Contents of A/g)]
         expect(components).to.have.lengthOf(3)
         
-        const stylesheets = [...multipleInstances.matchAll(/background-color:paleturquoise/g)]
+        const stylesheets = [...multipleInstances.matchAll(/background-color:\s*(?:paleturquoise|#afeeee)/g)]
         expect(stylesheets).to.have.lengthOf(1)
         
         const scripts = [...multipleInstances.matchAll(new RegExp(devScriptRegex, "g"))]
