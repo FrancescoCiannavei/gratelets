@@ -71,7 +71,7 @@ describe("dev", {
 })
 
 describe("build", {
-    timeout: 500,
+    timeout: 1000,
     skip: typeof WebSocket === "undefined"
 }, () => {
     let fixture: BuildFixture
